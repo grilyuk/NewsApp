@@ -16,6 +16,7 @@ class NewsListPresenter: INewsListPresenter {
     
     func uploadData(completion: @escaping ([NewsListModel]) -> Void) {
         networkService.getNews { [weak self] result in
+            
             switch result {
             case .success(let newsModel):
                 self?.convertModels(networkModel: newsModel, completion: completion)
@@ -37,11 +38,11 @@ class NewsListPresenter: INewsListPresenter {
             modelsToView.append(newsModel)
             completion(modelsToView)
             
-            downloadImage(for: article, completion: completion)
+            downloadImage(for: article)
         }
     }
     
-    private func downloadImage(for article: Article, completion: @escaping ([NewsListModel]) -> Void) {
+    private func downloadImage(for article: Article) {
         
         guard let imageUrl = article.urlToImage else {
             return
@@ -49,14 +50,17 @@ class NewsListPresenter: INewsListPresenter {
         
         networkService.getImage(url: imageUrl) { [weak self] result in
             switch result {
+                
             case .success(let newsImage):
-                guard let index = self?.modelsToView.firstIndex(where: { $0.newsTitle == article.title }) else {
+                guard let self,
+                      let index = self.view?.newsModels.firstIndex(where: { $0.newsTitle == article.title ?? "" }),
+                      let id = self.view?.newsModels[index].uuid else {
                     return
                 }
-                self?.modelsToView[index].newsImage = newsImage
-                DispatchQueue.main.async {
-                    completion(self?.modelsToView ?? [])
-                }
+                
+                self.view?.newsModels[index].newsImage = newsImage
+                
+                self.view?.updateCells(id: id)
             case .failure(let failure):
                 print(failure.localizedDescription)
             }

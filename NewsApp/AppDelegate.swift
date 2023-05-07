@@ -14,6 +14,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let initialController = NewsListViewController()
+        let presenter = NewsListPresenter()
+        initialController.presenter = presenter
+        presenter.view = initialController
         let navigationController = UINavigationController(rootViewController: initialController)
         window?.rootViewController = navigationController
         window?.backgroundColor = .systemBackground

@@ -3,6 +3,7 @@ import UIKit
 protocol INewsListView: AnyObject {
     var newsModels: [NewsListModel] { get set }
     func showNews(models: [NewsListModel])
+    func updateCells(id: UUID)
 }
 
 class NewsListViewController: UIViewController {
@@ -11,7 +12,7 @@ class NewsListViewController: UIViewController {
     
     // MARK: - Public properties
     
-    var presenter: INewsListPresenter? = NewsListPresenter()
+    var presenter: INewsListPresenter?
     var newsModels: [NewsListModel] = []
     
     // MARK: - Private properties
@@ -56,6 +57,10 @@ class NewsListViewController: UIViewController {
 extension NewsListViewController: INewsListView {
     func showNews(models: [NewsListModel]) {
         dataSource.setupNewsList(news: models)
+    }
+    
+    func updateCells(id: UUID) {
+        dataSource.updateImage(for: id)
     }
 }
 
