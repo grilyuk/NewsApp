@@ -73,6 +73,8 @@ class NewsListViewCell: UITableViewCell {
         super.prepareForReuse()
         newsTitle.text = nil
         viewsCount.text = nil
+        newsImage.image = UIImage(systemName: "photo")?
+            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
     }
     
     func configure(with model: NewsListModel) {
