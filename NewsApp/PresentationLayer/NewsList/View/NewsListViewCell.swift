@@ -72,7 +72,7 @@ class NewsListViewCell: UITableViewCell {
     }
     
     // MARK: - prepareForReuse
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
         newsTitle.text = nil
