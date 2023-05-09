@@ -2,6 +2,7 @@ import UIKit
 
 protocol INewsListPresenter: AnyObject {
     func uploadData(completion: @escaping ([NewsListModel]) -> Void)
+    func showNewsDetail()
 }
 
 class NewsListPresenter: INewsListPresenter {
@@ -9,21 +10,36 @@ class NewsListPresenter: INewsListPresenter {
     // MARK: - Public properties
     
     weak var view: INewsListView?
-    var networkService: INetworkService = NetworkService()
+    var router: IRouter?
+    var networkService: INetworkService?
     var modelsToView: [NewsListModel] = []
+    
+    // MARK: - Private properties
+    
+    private let mainQueue = DispatchQueue.main
+    private let backgroundQueue = DispatchQueue.global(qos: .userInitiated)
     
     // MARK: - Public properties
     
     func uploadData(completion: @escaping ([NewsListModel]) -> Void) {
-        networkService.getNews { [weak self] result in
+        networkService?.getNews { [weak self] result in
             
             switch result {
+                
             case .success(let newsModel):
                 self?.convertModels(networkModel: newsModel, completion: completion)
+                
             case .failure(let failure):
                 print(failure.localizedDescription)
+                self?.mainQueue.async {
+                    self?.view?.showError()
+                }
             }
         }
+    }
+    
+    func showNewsDetail() {
+        router?.showNewsDetails()
     }
     
     // MARK: - Private properties
@@ -31,15 +47,20 @@ class NewsListPresenter: INewsListPresenter {
     private func convertModels(networkModel: NewsListModelNetwork, completion: @escaping ([NewsListModel]) -> Void) {
         
         networkModel.articles.forEach { article in
-            
+
             let newsModel = NewsListModel(newsTitle: article.title ?? "",
                                           views: 0,
-                                          newsImage: nil)
-            modelsToView.append(newsModel)
-            completion(modelsToView)
+                                          newsImage: nil,
+                                          source: article.url ?? "",
+                                          article: article)
             
-            downloadImage(for: article)
+            if !modelsToView.contains(where: { $0.source == newsModel.source }) {
+                modelsToView.append(newsModel)
+                downloadImage(for: article)
+            }
         }
+        
+        completion(modelsToView)
     }
     
     private func downloadImage(for article: Article) {
@@ -48,7 +69,7 @@ class NewsListPresenter: INewsListPresenter {
             return
         }
         
-        networkService.getImage(url: imageUrl) { [weak self] result in
+        networkService?.getImage(url: imageUrl) { [weak self] result in
             switch result {
                 
             case .success(let newsImage):
@@ -58,9 +79,10 @@ class NewsListPresenter: INewsListPresenter {
                     return
                 }
                 
-                self.view?.newsModels[index].newsImage = newsImage
-                
-                self.view?.updateCells(id: id)
+                self.mainQueue.async {
+                    self.view?.newsModels[index].newsImage = newsImage
+                    self.view?.updateCells(id: id)
+                }
             case .failure(let failure):
                 print(failure.localizedDescription)
             }

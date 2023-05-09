@@ -11,13 +11,10 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     lazy var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
-
+    lazy var presentationAssembly = PresentationAssembly()
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let initialController = NewsListViewController()
-        let presenter = NewsListPresenter()
-        initialController.presenter = presenter
-        presenter.view = initialController
-        let navigationController = UINavigationController(rootViewController: initialController)
+        let navigationController = presentationAssembly.createNewsList()
         window?.rootViewController = navigationController
         window?.backgroundColor = .systemBackground
         window?.makeKeyAndVisible()

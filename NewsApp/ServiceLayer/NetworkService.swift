@@ -9,28 +9,28 @@ class NetworkService: INetworkService {
     
     // MARK: - Initialization
     
-    init() {
+    init(urlRequestFactory: IRequestFactory) {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = URLCache(memoryCapacity: 50 * 1024 * 1024,
                                           diskCapacity: 100 * 1024 * 1024,
                                           diskPath: "NewsCache")
         let session = URLSession(configuration: configuration)
         self.session = session
+        self.urlRequestFactory = urlRequestFactory
     }
     
     // MARK: - Private properties
     
     private var session: URLSession
+    private var urlRequestFactory: IRequestFactory
     
     // MARK: - Public methods
     
     func getNews(completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void) {
         
-        guard let url = URL(string: "https://newsapi.org/v2/everything?q=tesla&sortBy=publishedAt&apiKey=d7fa48123fe8427e96f1166508c58d76&pageSize=20") else {
-            return
-        }
+        let urlRequest = try? urlRequestFactory.getNews()
         
-        let urlRequest = URLRequest(url: url)
+        guard let urlRequest else { return }
         
         session.dataTask(with: urlRequest) { data, response, error in
             
