@@ -2,7 +2,8 @@ import UIKit
 
 protocol INewsListPresenter: AnyObject {
     func uploadData(completion: @escaping ([NewsListModel]) -> Void)
-    func showNewsDetail()
+    func downloadImage(for article: Article)
+    func showNewsDetail(article: Article, newsImage: UIImage, navigationController: UINavigationController)
 }
 
 class NewsListPresenter: INewsListPresenter {
@@ -38,32 +39,7 @@ class NewsListPresenter: INewsListPresenter {
         }
     }
     
-    func showNewsDetail() {
-        router?.showNewsDetails()
-    }
-    
-    // MARK: - Private properties
-    
-    private func convertModels(networkModel: NewsListModelNetwork, completion: @escaping ([NewsListModel]) -> Void) {
-        
-        networkModel.articles.forEach { article in
-
-            let newsModel = NewsListModel(newsTitle: article.title ?? "",
-                                          views: 0,
-                                          newsImage: nil,
-                                          source: article.url ?? "",
-                                          article: article)
-            
-            if !modelsToView.contains(where: { $0.source == newsModel.source }) {
-                modelsToView.append(newsModel)
-                downloadImage(for: article)
-            }
-        }
-        
-        completion(modelsToView)
-    }
-    
-    private func downloadImage(for article: Article) {
+    func downloadImage(for article: Article) {
         
         guard let imageUrl = article.urlToImage else {
             return
@@ -81,11 +57,36 @@ class NewsListPresenter: INewsListPresenter {
                 
                 self.mainQueue.async {
                     self.view?.newsModels[index].newsImage = newsImage
+                    self.view?.newsModels[index].isDownloaded = true
                     self.view?.updateCells(id: id)
                 }
             case .failure(let failure):
                 print(failure.localizedDescription)
             }
         }
+    }
+    
+    func showNewsDetail(article: Article, newsImage: UIImage, navigationController: UINavigationController) {
+        router?.showNewsDetails(article: article, newsImage: newsImage, navigationController: navigationController)
+    }
+    
+    // MARK: - Private properties
+    
+    private func convertModels(networkModel: NewsListModelNetwork, completion: @escaping ([NewsListModel]) -> Void) {
+        
+        networkModel.articles.forEach { article in
+
+            let newsModel = NewsListModel(newsTitle: article.title ?? "",
+                                          views: 0,
+                                          newsImage: nil,
+                                          source: article.url ?? "",
+                                          article: article)
+            
+            if !modelsToView.contains(where: { $0.source == newsModel.source }) {
+                modelsToView.append(newsModel)
+            }
+        }
+        
+        completion(modelsToView)
     }
 }

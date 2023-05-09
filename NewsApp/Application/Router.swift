@@ -1,27 +1,27 @@
 import UIKit
 
 protocol IRouter: AnyObject {
-    func showNewsDetails()
+    func showNewsDetails(article: Article, newsImage: UIImage, navigationController: UINavigationController)
 }
 
 class Router: IRouter {
     
     // MARK: - Initialization
     
-    init(presentationAssembly: IPresentationAssembly, navigationController: UINavigationController) {
+    init(presentationAssembly: IPresentationAssembly) {
         self.presentationAssembly = presentationAssembly
-        self.navigationController = navigationController
     }
     
     // MARK: - Public properties
     
-    var presentationAssembly: IPresentationAssembly
-    var navigationController: UINavigationController
+    weak var presentationAssembly: IPresentationAssembly?
     
     // MARK: - Public methods
     
-    func showNewsDetails() {
-        let newsDetails = presentationAssembly.createNewsDetails()
+    func showNewsDetails(article: Article, newsImage: UIImage, navigationController: UINavigationController) {
+        guard let newsDetails = presentationAssembly?.createNewsDetails(article: article, newsImage: newsImage) else {
+            return
+        }
         navigationController.pushViewController(newsDetails, animated: true)
     }
 }

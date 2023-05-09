@@ -5,7 +5,7 @@ class NewsListViewCell: UITableViewCell {
     // MARK: - UIConstants
     
     private enum UIConstant {
-        static let edge: CGFloat = 5
+        static let edge: CGFloat = 10
     }
     
     // MARK: - Public properties

@@ -1,6 +1,6 @@
 import UIKit
 
-protocol INewsListView: AnyObject {
+protocol INewsListView: UIViewController {
     var newsModels: [NewsListModel] { get set }
     func showNews(models: [NewsListModel])
     func showError()
@@ -52,7 +52,6 @@ class NewsListViewController: UIViewController {
         appearance.backgroundColor = .systemGray4
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        navigationController?.navigationBar.prefersLargeTitles = true
     }
     
     @objc
@@ -102,13 +101,36 @@ extension NewsListViewController: INewsListView {
 
 extension NewsListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        UIScreen.main.bounds.height / 10
+        UIScreen.main.bounds.height / 8
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
-//        newsModels.first(where: {$0.uuid == cell})
-        presenter?.showNewsDetail()
         tableView.deselectRow(at: indexPath, animated: true)
+        let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
+        guard let article = newsModels.first(where: { $0.uuid == cell })?.article,
+              let navigationController = self.navigationController else {
+            return
+        }
+        
+        if let newsImage = newsModels.first(where: { $0.uuid == cell })?.newsImage {
+            presenter?.showNewsDetail(article: article, newsImage: newsImage, navigationController: navigationController)
+        } else {
+            let newsImage = UIImage(systemName: "photo")?.withTintColor(.lightGray)
+                .scalePreservingAspectRatio(targetSize: view.bounds.size) ?? UIImage()
+            presenter?.showNewsDetail(article: article, newsImage: newsImage, navigationController: navigationController)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        DispatchQueue.global().async { [weak self] in
+            guard let self else { return }
+            let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
+            guard let model = newsModels.first(where: { $0.uuid == cell }),
+                  !model.isDownloaded
+            else {
+                return
+            }
+            presenter?.downloadImage(for: model.article)
+        }
     }
 }

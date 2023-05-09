@@ -2,11 +2,12 @@ import UIKit
 
 protocol IPresentationAssembly: AnyObject {
     func createNewsList() -> UINavigationController
-    func createNewsDetails() -> NewsViewController
+    func createNewsDetails(article: Article, newsImage: UIImage) -> NewsViewController
 }
 
 class PresentationAssembly: IPresentationAssembly {
     
+    private lazy var router = Router(presentationAssembly: self)
     private lazy var requestFactory = RequestFactory(host: "newsapi.org/v2/")
     private lazy var networkService: INetworkService = NetworkService(urlRequestFactory: requestFactory)
     
@@ -15,15 +16,22 @@ class PresentationAssembly: IPresentationAssembly {
         let view = NewsListViewController()
         presenter.networkService = networkService
         presenter.view = view
+        presenter.router = router
         view.presenter = presenter
         let navigationController = UINavigationController(rootViewController: view)
-        let router = Router(presentationAssembly: self, navigationController: navigationController)
-        presenter.router = router
         return navigationController
     }
     
-    func createNewsDetails() -> NewsViewController {
-        let view = NewsViewController()
+    func createNewsDetails(article: Article, newsImage: UIImage) -> NewsViewController {
+        let view = NewsViewController(article: article, newImage: newsImage)
+        let presenter = NewsPresenter()
+        presenter.router = router
+        presenter.view = view
+        view.presenter = presenter
         return view
+    }
+    
+    func createFullNews() {
+        
     }
 }
