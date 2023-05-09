@@ -69,17 +69,23 @@ class NewsListViewCell: UITableViewCell {
         ])
     }
     
+    // MARK: - prepareForReuse
+    
     override func prepareForReuse() {
         super.prepareForReuse()
         newsTitle.text = nil
         viewsCount.text = nil
-        newsImage.image = UIImage(systemName: "photo")?
-            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
+        newsImage.image = nil
     }
+    
+    // MARK: - Configure
     
     func configure(with model: NewsListModel) {
         if model.newsImage != nil {
             newsImage.image = model.newsImage
+        } else {
+            newsImage.image = UIImage(systemName: "photo")?
+                .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
         }
         newsTitle.text = model.newsTitle
         viewsCount.text = "Views \(model.views)"

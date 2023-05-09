@@ -91,6 +91,7 @@ class NewsView: UIView {
     // MARK: - Public methods
     
     func setupUI() {
+        backgroundColor = .systemBackground
         addSubviews(newsHeader, newsImage, newsDescription, newsDate, newsSource, openLinkButton)
         
         newsHeader.translatesAutoresizingMaskIntoConstraints = false
@@ -121,7 +122,7 @@ class NewsView: UIView {
             newsSource.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -UIConstants.edge),
             
             openLinkButton.topAnchor.constraint(equalTo: newsSource.bottomAnchor, constant: UIConstants.edge),
-            openLinkButton.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -UIConstants.edge),
+            openLinkButton.centerXAnchor.constraint(equalTo: self.centerXAnchor),
             openLinkButton.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 0.4),
             openLinkButton.bottomAnchor.constraint(lessThanOrEqualTo: self.bottomAnchor),
             openLinkButton.heightAnchor.constraint(equalTo: self.heightAnchor, multiplier: 0.05)

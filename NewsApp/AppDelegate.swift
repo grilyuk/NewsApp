@@ -14,7 +14,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     lazy var presentationAssembly = PresentationAssembly()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let navigationController = presentationAssembly.createNewsList()
+        let assembly = PresentationAssembly()
+        let navigationController = UINavigationController()
+        let router = Router(presentationAssembly: assembly, navigationController: navigationController)
+        router.initialController()
         window?.rootViewController = navigationController
         window?.backgroundColor = .systemBackground
         window?.makeKeyAndVisible()

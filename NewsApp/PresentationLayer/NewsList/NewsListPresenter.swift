@@ -3,7 +3,7 @@ import UIKit
 protocol INewsListPresenter: AnyObject {
     func uploadData(completion: @escaping ([NewsListModel]) -> Void)
     func downloadImage(for article: Article)
-    func showNewsDetail(article: Article, newsImage: UIImage, navigationController: UINavigationController)
+    func showNewsDetail(article: Article, newsImage: UIImage)
 }
 
 class NewsListPresenter: INewsListPresenter {
@@ -66,8 +66,8 @@ class NewsListPresenter: INewsListPresenter {
         }
     }
     
-    func showNewsDetail(article: Article, newsImage: UIImage, navigationController: UINavigationController) {
-        router?.showNewsDetails(article: article, newsImage: newsImage, navigationController: navigationController)
+    func showNewsDetail(article: Article, newsImage: UIImage) {
+        router?.showNewsDetails(article: article, newsImage: newsImage)
     }
     
     // MARK: - Private properties
@@ -86,7 +86,11 @@ class NewsListPresenter: INewsListPresenter {
                 modelsToView.append(newsModel)
             }
         }
-        
-        completion(modelsToView)
+        mainQueue.async { [weak self] in
+            guard let self else {
+                return
+            }
+            completion(modelsToView)
+        }
     }
 }

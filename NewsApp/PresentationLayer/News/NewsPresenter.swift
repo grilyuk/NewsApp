@@ -11,6 +11,6 @@ class NewsPresenter: INewsPresenter {
     var networkService: INetworkService?
     
     func showFullNews(url: String) {
-        print(url)
+        
     }
 }

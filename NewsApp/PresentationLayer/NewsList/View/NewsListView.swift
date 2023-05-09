@@ -18,7 +18,6 @@ class NewsListView: UIView {
     
     lazy var tableView: UITableView = {
         let table = UITableView()
-        
         return table
     }()
     
@@ -32,6 +31,7 @@ class NewsListView: UIView {
     // MARK: - Private methods
     
     private func setupConstraints() {
+        backgroundColor = .systemBackground
         tableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),

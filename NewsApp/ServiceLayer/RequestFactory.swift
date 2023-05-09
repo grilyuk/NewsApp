@@ -17,7 +17,7 @@ class RequestFactory: IRequestFactory {
     private let host: String
     
     func getNews() throws -> URLRequest {
-        guard let url = URL(string: "https://newsapi.org/v2/everything?q=tesla&sortBy=publishedAt&apiKey=d7fa48123fe8427e96f1166508c58d76") else {
+        guard let url = URL(string: "https://newsapi.org/v2/everything?q=tesla&sortBy=publishedAt&apiKey=d7fa48123fe8427e96f1166508c58d76&pageSize=20") else {
             throw MyError.requestError
         }
         

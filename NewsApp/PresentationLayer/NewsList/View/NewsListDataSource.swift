@@ -18,6 +18,8 @@ class NewsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
         }
     }
     
+    // MARK: - Public properties
+    
     func setupNewsList(news: [NewsListModel]) {
         var snapshot = snapshot()
         snapshot.deleteAllItems()

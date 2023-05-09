@@ -21,6 +21,7 @@ class NewsListViewController: UIViewController {
     private lazy var newsListView = NewsListView()
     private lazy var dataSource = DataSource(tableView: newsListView.tableView, view: self)
     private lazy var pullToRefresh = UIRefreshControl()
+    private lazy var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
     
     // MARK: - Lifecycle
     
@@ -30,6 +31,9 @@ class NewsListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let refreshBarButton: UIBarButtonItem = UIBarButtonItem(customView: activityIndicator)
+        self.navigationItem.leftBarButtonItem = refreshBarButton
+        activityIndicator.startAnimating()
         presenter?.uploadData(completion: { [weak self] models in
             self?.newsModels = models
             self?.showNews(models: models)
@@ -44,10 +48,19 @@ class NewsListViewController: UIViewController {
         pullToRefresh.addTarget(self, action: #selector(updateNews), for: .valueChanged)
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        newsListView.isHidden = false
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        newsListView.isHidden = true
+    }
+    
     // MARK: - Private methods
     
     private func setupNavigationBar() {
-        self.title = "News"
         let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .systemGray4
         navigationController?.navigationBar.standardAppearance = appearance
@@ -73,6 +86,8 @@ class NewsListViewController: UIViewController {
 extension NewsListViewController: INewsListView {
     
     func showNews(models: [NewsListModel]) {
+        activityIndicator.stopAnimating()
+        self.title = "News"
         dataSource.setupNewsList(news: models)
     }
     
@@ -100,6 +115,7 @@ extension NewsListViewController: INewsListView {
 }
 
 extension NewsListViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         UIScreen.main.bounds.height / 8
     }
@@ -107,17 +123,16 @@ extension NewsListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
-        guard let article = newsModels.first(where: { $0.uuid == cell })?.article,
-              let navigationController = self.navigationController else {
+        guard let article = newsModels.first(where: { $0.uuid == cell })?.article else {
             return
         }
-        
+
         if let newsImage = newsModels.first(where: { $0.uuid == cell })?.newsImage {
-            presenter?.showNewsDetail(article: article, newsImage: newsImage, navigationController: navigationController)
+            presenter?.showNewsDetail(article: article, newsImage: newsImage)
         } else {
             let newsImage = UIImage(systemName: "photo")?.withTintColor(.lightGray)
                 .scalePreservingAspectRatio(targetSize: view.bounds.size) ?? UIImage()
-            presenter?.showNewsDetail(article: article, newsImage: newsImage, navigationController: navigationController)
+            presenter?.showNewsDetail(article: article, newsImage: newsImage)
         }
     }
     
@@ -131,6 +146,10 @@ extension NewsListViewController: UITableViewDelegate {
                 return
             }
             presenter?.downloadImage(for: model.article)
+            guard let index = newsModels.firstIndex(where: { $0.uuid == cell }) else {
+                return
+            }
+            newsModels[index].isDownloaded = true
         }
     }
 }

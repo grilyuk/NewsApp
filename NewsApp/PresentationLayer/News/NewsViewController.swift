@@ -38,7 +38,7 @@ class NewsViewController: UIViewController {
     
     @objc
     private func showFullNews() {
-        presenter?.showFullNews(url: article.url ?? "")
+//        presenter?.showFullNews(url: article.url ?? "")
     }
 }
 
