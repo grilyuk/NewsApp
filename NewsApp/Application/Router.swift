@@ -2,6 +2,7 @@ import UIKit
 
 protocol IRouter: AnyObject {
     func showNewsDetails(article: Article, newsImage: UIImage)
+    func showFullNews(link: String)
 }
 
 class Router: IRouter {
@@ -27,8 +28,14 @@ class Router: IRouter {
     }
     
     func showNewsDetails(article: Article, newsImage: UIImage) {
-        if let newsDetails = presentationAssembly?.createNewsDetails(article: article, newsImage: newsImage) {
-            navigationController.pushViewController(newsDetails, animated: true)
+        if let newsDetails = presentationAssembly?.createNewsDetails(router: self, article: article, newsImage: newsImage) {
+            navigationController.present(newsDetails, animated: true)
+        }
+    }
+    
+    func showFullNews(link: String) {
+        if let fullNews = presentationAssembly?.createFullNews(link: link) {
+            navigationController.pushViewController(fullNews, animated: true)
         }
     }
 }

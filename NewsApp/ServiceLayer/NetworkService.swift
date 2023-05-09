@@ -3,6 +3,7 @@ import UIKit
 protocol INetworkService: AnyObject {
     func getNews(completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void)
     func getImage(url: String, completion: @escaping (Result<UIImage, Error>) -> Void)
+    func checkUrlResponse(url: String?, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 class NetworkService: INetworkService {
@@ -13,7 +14,7 @@ class NetworkService: INetworkService {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = URLCache(memoryCapacity: 50 * 1024 * 1024,
                                           diskCapacity: 100 * 1024 * 1024,
-                                          diskPath: "NewsCache")
+                                          diskPath: "cache")
         let session = URLSession(configuration: configuration)
         self.session = session
         self.urlRequestFactory = urlRequestFactory
@@ -73,6 +74,33 @@ class NetworkService: INetworkService {
             
             if let image = UIImage(data: data) {
                 completion(.success(image))
+            }
+        }.resume()
+    }
+    
+    func checkUrlResponse(url: String?, completion: @escaping (Result<Void, Error>) -> Void) {
+        
+        guard let url = URL(string: url ?? "") else {
+            completion(.failure(MyError.requestError))
+            return
+        }
+        
+        let urlRequest = URLRequest(url: url)
+        
+        session.dataTask(with: urlRequest) { _, response, error in
+            if let error {
+                completion(.failure(error))
+            }
+            
+            guard let response = response as? HTTPURLResponse else {
+                completion(.failure(MyError.requestError))
+                return
+            }
+            
+            if response.statusCode != 200 {
+                completion(.failure(MyError.requestError))
+            } else {
+                completion(.success(()))
             }
         }.resume()
     }

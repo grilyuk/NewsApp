@@ -18,6 +18,7 @@ class NewsListViewController: UIViewController {
     
     // MARK: - Private properties
     
+    private lazy var background = DispatchQueue.global(qos: .default)
     private lazy var newsListView = NewsListView()
     private lazy var dataSource = DataSource(tableView: newsListView.tableView, view: self)
     private lazy var pullToRefresh = UIRefreshControl()
@@ -48,16 +49,6 @@ class NewsListViewController: UIViewController {
         pullToRefresh.addTarget(self, action: #selector(updateNews), for: .valueChanged)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        newsListView.isHidden = false
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        newsListView.isHidden = true
-    }
-    
     // MARK: - Private methods
     
     private func setupNavigationBar() {
@@ -67,9 +58,11 @@ class NewsListViewController: UIViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
     }
     
+    // MARK: - Actions
+    
     @objc
     private func updateNews() {
-        presenter?.uploadData(completion: { [weak self] models in
+        presenter?.uploadData { [weak self] models in
             models.forEach { [weak self] model in
                 guard let self else { return }
                 if !self.newsModels.contains(where: { model.source == $0.source }) {
@@ -77,11 +70,13 @@ class NewsListViewController: UIViewController {
                     self.appendNews(news: models)
                 }
             }
-        })
+        }
         pullToRefresh.endRefreshing()
     }
     
 }
+
+// MARK: - NewsListViewController + INewsListView
 
 extension NewsListViewController: INewsListView {
     
@@ -110,9 +105,11 @@ extension NewsListViewController: INewsListView {
     }
     
     func updateCells(id: UUID) {
-        dataSource.updateImage(for: id)
+        dataSource.updateData(for: id)
     }
 }
+
+// MARK: - NewsListViewController + UITableViewDelegate
 
 extension NewsListViewController: UITableViewDelegate {
     
@@ -123,7 +120,8 @@ extension NewsListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
-        guard let article = newsModels.first(where: { $0.uuid == cell })?.article else {
+        guard let article = newsModels.first(where: { $0.uuid == cell })?.article,
+              let index = newsModels.firstIndex(where: { $0.uuid == cell }) else {
             return
         }
 
@@ -134,21 +132,19 @@ extension NewsListViewController: UITableViewDelegate {
                 .scalePreservingAspectRatio(targetSize: view.bounds.size) ?? UIImage()
             presenter?.showNewsDetail(article: article, newsImage: newsImage)
         }
+        newsModels[index].views += 1
+        dataSource.updateData(for: newsModels[index].uuid)
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        DispatchQueue.global().async { [weak self] in
+        background.async { [weak self] in
             guard let self else { return }
             let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
-            guard let model = newsModels.first(where: { $0.uuid == cell }),
-                  !model.isDownloaded
-            else {
+            guard let index = newsModels.firstIndex(where: { $0.uuid == cell }),
+                  !newsModels[index].isDownloaded else {
                 return
             }
-            presenter?.downloadImage(for: model.article)
-            guard let index = newsModels.firstIndex(where: { $0.uuid == cell }) else {
-                return
-            }
+            presenter?.downloadImage(for: newsModels[index].article)
             newsModels[index].isDownloaded = true
         }
     }

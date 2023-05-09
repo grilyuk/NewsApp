@@ -47,6 +47,8 @@ class NewsListViewCell: UITableViewCell {
         return label
     }()
     
+    // MARK: - Private methods
+    
     private func setupUI() {
         contentView.addSubviews(newsImage, newsTitle, viewsCount)
         

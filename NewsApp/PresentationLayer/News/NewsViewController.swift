@@ -22,13 +22,18 @@ class NewsViewController: UIViewController {
     // MARK: - Public properties
     
     var presenter: INewsPresenter?
+    
+    // MARK: - Private properties
+    
     private var article: Article
     private var newsImage: UIImage
-    
     private lazy var newsView = NewsView(article: article, newsImage: newsImage)
 
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .systemBackground
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -36,11 +41,26 @@ class NewsViewController: UIViewController {
         showNewsDetail()
     }
     
+    // MARK: - Actions
+    
     @objc
     private func showFullNews() {
-//        presenter?.showFullNews(url: article.url ?? "")
+        let url = article.url
+        presenter?.check(url: url) { result in
+            DispatchQueue.main.async { [weak self] in
+                switch result {
+                case .success:
+                    self?.presenter?.showFullNews(link: url ?? "")
+                    self?.dismiss(animated: true)
+                case .failure:
+                    self?.showError()
+                }
+            }
+        }
     }
 }
+
+// MARK: - NewsViewController + INewsView
 
 extension NewsViewController: INewsView {
     func showNewsDetail() {
@@ -54,7 +74,7 @@ extension NewsViewController: INewsView {
                                       message: "Try later",
                                       preferredStyle: .alert)
         let close = UIAlertAction(title: "Close", style: .default) { [weak self] _ in
-            self?.navigationController?.popToRootViewController(animated: true)
+            self?.dismiss(animated: true)
         }
         alert.addAction(close)
         present(alert, animated: true)

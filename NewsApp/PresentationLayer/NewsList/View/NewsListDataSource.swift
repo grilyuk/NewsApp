@@ -28,7 +28,7 @@ class NewsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
         apply(snapshot)
     }
     
-    func updateImage(for cell: UUID) {
+    func updateData(for cell: UUID) {
         var snapshot = snapshot()
         snapshot.reloadItems([cell])
         apply(snapshot)
