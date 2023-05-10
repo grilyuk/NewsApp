@@ -14,7 +14,8 @@ class NetworkService: INetworkService {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = URLCache(memoryCapacity: 50 * 1024 * 1024,
                                           diskCapacity: 100 * 1024 * 1024,
-                                          diskPath: "cache")
+                                          diskPath: "networkCache")
+
         let session = URLSession(configuration: configuration)
         self.session = session
         self.urlRequestFactory = urlRequestFactory
@@ -28,7 +29,7 @@ class NetworkService: INetworkService {
     // MARK: - Public methods
     
     func getNews(countNews: Int, completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void) {
-        
+
         let urlRequest = try? urlRequestFactory.getNews(countNews: countNews)
         
         guard let urlRequest else { return }

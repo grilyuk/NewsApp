@@ -63,19 +63,19 @@ class NewsListViewController: UIViewController {
     
     @objc
     private func updateNews() {
-        let items = dataSource.snapshot().numberOfItems
-        presenter?.uploadData(countOfNews: items) { [weak self] models in
+        presenter?.uploadData(countOfNews: numbersOfNews) { [weak self] models in
+            var newModels: [NewsListModel] = []
             models.forEach { [weak self] model in
-                guard let self,
-                      let lastUuid = dataSource.snapshot().itemIdentifiers.first else {
-                    return
-                }
-                if !self.newsModels.contains(where: { model.source == $0.source }) {
-                    self.newsModels.append(contentsOf: models)
-                    self.appendNews(lastItem: lastUuid, news: models)
+                
+                guard let self else { return }
+                
+                if !newsModels.contains(where: { model.article.url == $0.article.url }) {
+                    newsModels.append(model)
+                    newModels.append(model)
                 }
             }
         }
+        showNews(models: newsModels)
         pullToRefresh.endRefreshing()
     }
     
@@ -160,8 +160,6 @@ extension NewsListViewController: UITableViewDelegate {
             newsModels[index].isDownloaded = true
         }
         
-        print(indexPath.row + 1, numbersOfNews)
-        
         if (indexPath.row + 1) == numbersOfNews {
             
             numbersOfNews != 100 ? numbersOfNews += 20 : print("")
@@ -169,18 +167,19 @@ extension NewsListViewController: UITableViewDelegate {
             presenter?.uploadData(countOfNews: numbersOfNews) { [weak self] models in
                 var newModels: [NewsListModel] = []
                 models.forEach { [weak self] model in
-                    guard let self else {
-                        return
-                    }
                     
-                    if !self.newsModels.contains(where: { model.article.url == $0.article.url }) {
-                        self.newsModels.append(model)
+                    guard let self else { return }
+                    
+                    if !newsModels.contains(where: { model.article.url == $0.article.url }) {
+                        newsModels.append(model)
                         newModels.append(model)
                     }
                 }
+                
                 guard let lastUuid = self?.dataSource.snapshot().itemIdentifiers.last else {
                     return
                 }
+                
                 self?.appendNews(lastItem: lastUuid, news: newModels)
             }
         }

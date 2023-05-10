@@ -16,6 +16,8 @@ class NewsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
             cell.configure(with: model)
             return cell
         }
+        
+        defaultRowAnimation = .fade
     }
     
     // MARK: - Public properties
@@ -25,18 +27,18 @@ class NewsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
         snapshot.deleteAllItems()
         snapshot.appendSections([0])
         snapshot.appendItems(news.map({ $0.uuid }))
-        apply(snapshot)
+        apply(snapshot, animatingDifferences: true)
     }
     
     func updateData(for cell: UUID) {
         var snapshot = snapshot()
         snapshot.reloadItems([cell])
-        apply(snapshot)
+        apply(snapshot, animatingDifferences: false)
     }
     
     func appendNewsCells(lastItem: UUID, news: [NewsListModel]) {
         var snapshot = snapshot()
         snapshot.insertItems(news.map({ $0.uuid }), afterItem: lastItem)
-        apply(snapshot)
+        apply(snapshot, animatingDifferences: true)
     }
 }
