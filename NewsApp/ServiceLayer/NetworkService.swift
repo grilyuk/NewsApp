@@ -1,7 +1,7 @@
 import UIKit
 
 protocol INetworkService: AnyObject {
-    func getNews(completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void)
+    func getNews(countNews: Int, completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void)
     func getImage(url: String, completion: @escaping (Result<UIImage, Error>) -> Void)
     func checkUrlResponse(url: String?, completion: @escaping (Result<Void, Error>) -> Void)
 }
@@ -27,9 +27,9 @@ class NetworkService: INetworkService {
     
     // MARK: - Public methods
     
-    func getNews(completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void) {
+    func getNews(countNews: Int, completion: @escaping (Result<NewsListModelNetwork, Error>) -> Void) {
         
-        let urlRequest = try? urlRequestFactory.getNews()
+        let urlRequest = try? urlRequestFactory.getNews(countNews: countNews)
         
         guard let urlRequest else { return }
         

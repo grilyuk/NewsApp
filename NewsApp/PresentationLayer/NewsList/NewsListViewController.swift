@@ -18,6 +18,7 @@ class NewsListViewController: UIViewController {
     
     // MARK: - Private properties
     
+    private lazy var numbersOfNews = 20
     private lazy var background = DispatchQueue.global(qos: .default)
     private lazy var newsListView = NewsListView()
     private lazy var dataSource = DataSource(tableView: newsListView.tableView, view: self)
@@ -35,7 +36,7 @@ class NewsListViewController: UIViewController {
         let refreshBarButton: UIBarButtonItem = UIBarButtonItem(customView: activityIndicator)
         self.navigationItem.leftBarButtonItem = refreshBarButton
         activityIndicator.startAnimating()
-        presenter?.uploadData(completion: { [weak self] models in
+        presenter?.uploadData(countOfNews: numbersOfNews, completion: { [weak self] models in
             self?.newsModels = models
             self?.showNews(models: models)
         })
@@ -62,12 +63,16 @@ class NewsListViewController: UIViewController {
     
     @objc
     private func updateNews() {
-        presenter?.uploadData { [weak self] models in
+        let items = dataSource.snapshot().numberOfItems
+        presenter?.uploadData(countOfNews: items) { [weak self] models in
             models.forEach { [weak self] model in
-                guard let self else { return }
+                guard let self,
+                      let lastUuid = dataSource.snapshot().itemIdentifiers.first else {
+                    return
+                }
                 if !self.newsModels.contains(where: { model.source == $0.source }) {
                     self.newsModels.append(contentsOf: models)
-                    self.appendNews(news: models)
+                    self.appendNews(lastItem: lastUuid, news: models)
                 }
             }
         }
@@ -90,18 +95,18 @@ extension NewsListViewController: INewsListView {
         let alert = UIAlertController(title: "Something error 😬", message: "Maybe retry?", preferredStyle: .alert)
         let cancel = UIAlertAction(title: "Cancel", style: .cancel)
         let retry = UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
-            self?.presenter?.uploadData(completion: { [weak self] models in
+            self?.presenter?.uploadData(countOfNews: self?.numbersOfNews ?? 10) { [weak self] models in
                 self?.newsModels = models
                 self?.showNews(models: models)
-            })
+            }
         }
         alert.addAction(retry)
         alert.addAction(cancel)
         present(alert, animated: true)
     }
     
-    func appendNews(news: [NewsListModel]) {
-        dataSource.appendNewsCells(news: news)
+    func appendNews(lastItem: UUID, news: [NewsListModel]) {
+        dataSource.appendNewsCells(lastItem: lastItem, news: news)
     }
     
     func updateCells(id: UUID) {
@@ -137,15 +142,47 @@ extension NewsListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
         background.async { [weak self] in
-            guard let self else { return }
+            
+            guard let self else {
+                return
+            }
+            
             let cell = dataSource.snapshot().itemIdentifiers[indexPath.row]
+            
             guard let index = newsModels.firstIndex(where: { $0.uuid == cell }),
                   !newsModels[index].isDownloaded else {
                 return
             }
+            
             presenter?.downloadImage(for: newsModels[index].article)
             newsModels[index].isDownloaded = true
+        }
+        
+        print(indexPath.row + 1, numbersOfNews)
+        
+        if (indexPath.row + 1) == numbersOfNews {
+            
+            numbersOfNews != 100 ? numbersOfNews += 20 : print("")
+            
+            presenter?.uploadData(countOfNews: numbersOfNews) { [weak self] models in
+                var newModels: [NewsListModel] = []
+                models.forEach { [weak self] model in
+                    guard let self else {
+                        return
+                    }
+                    
+                    if !self.newsModels.contains(where: { model.article.url == $0.article.url }) {
+                        self.newsModels.append(model)
+                        newModels.append(model)
+                    }
+                }
+                guard let lastUuid = self?.dataSource.snapshot().itemIdentifiers.last else {
+                    return
+                }
+                self?.appendNews(lastItem: lastUuid, news: newModels)
+            }
         }
     }
 }

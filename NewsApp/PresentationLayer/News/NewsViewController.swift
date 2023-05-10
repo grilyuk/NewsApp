@@ -28,12 +28,16 @@ class NewsViewController: UIViewController {
     private var article: Article
     private var newsImage: UIImage
     private lazy var newsView = NewsView(article: article, newsImage: newsImage)
+    private lazy var activityIndicator = UIActivityIndicatorView(frame: view.frame)
 
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        activityIndicator.style = .large
+        view.addSubview(activityIndicator)
+        activityIndicator.startAnimating()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -45,12 +49,18 @@ class NewsViewController: UIViewController {
     
     @objc
     private func showFullNews() {
+        let position = newsView.openLinkButton.frame
+        newsView.openLinkButton.removeFromSuperview()
+        let activityIndicator = UIActivityIndicatorView(frame: position)
+        newsView.addSubview(activityIndicator)
+        activityIndicator.startAnimating()
         let url = article.url
         presenter?.check(url: url) { result in
             DispatchQueue.main.async { [weak self] in
                 switch result {
                 case .success:
-                    self?.presenter?.showFullNews(link: url ?? "")
+                    let link = self?.article.url
+                    self?.presenter?.showFullNews(link: link ?? "")
                     self?.dismiss(animated: true)
                 case .failure:
                     self?.showError()
@@ -64,6 +74,7 @@ class NewsViewController: UIViewController {
 
 extension NewsViewController: INewsView {
     func showNewsDetail() {
+        activityIndicator.removeFromSuperview()
         self.view = newsView
         newsView.setupUI()
         newsView.openLinkButton.addTarget(self, action: #selector(showFullNews), for: .touchUpInside)

@@ -10,7 +10,7 @@ class PresentationAssembly: IPresentationAssembly {
     
     // MARK: - Private properties
     
-    private lazy var requestFactory = RequestFactory(host: "newsapi.org/v2/")
+    private lazy var requestFactory = RequestFactory(host: "newsapi.org")
     private lazy var networkService: INetworkService = NetworkService(urlRequestFactory: requestFactory)
     
     // MARK: - Public methods

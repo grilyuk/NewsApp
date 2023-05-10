@@ -1,7 +1,7 @@
 import UIKit
 
 protocol INewsListPresenter: AnyObject {
-    func uploadData(completion: @escaping ([NewsListModel]) -> Void)
+    func uploadData(countOfNews: Int, completion: @escaping ([NewsListModel]) -> Void)
     func downloadImage(for article: Article)
     func showNewsDetail(article: Article, newsImage: UIImage)
 }
@@ -22,16 +22,16 @@ class NewsListPresenter: INewsListPresenter {
     
     // MARK: - Public properties
     
-    func uploadData(completion: @escaping ([NewsListModel]) -> Void) {
-        networkService?.getNews { [weak self] result in
+    func uploadData(countOfNews: Int, completion: @escaping ([NewsListModel]) -> Void) {
+        networkService?.getNews(countNews: countOfNews) { [weak self] result in
             
             switch result {
                 
             case .success(let newsModel):
+                print(newsModel.articles.count)
                 self?.convertModels(networkModel: newsModel, completion: completion)
                 
-            case .failure(let failure):
-                print(failure.localizedDescription)
+            case .failure:
                 self?.mainQueue.async {
                     self?.view?.showError()
                 }
@@ -55,10 +55,11 @@ class NewsListPresenter: INewsListPresenter {
                     return
                 }
                 
-                self.mainQueue.async {
-                    self.view?.newsModels[index].newsImage = newsImage
-                    self.view?.newsModels[index].isDownloaded = true
-                    self.view?.updateCells(id: id)
+                self.view?.newsModels[index].newsImage = newsImage
+                self.view?.newsModels[index].isDownloaded = true
+                
+                self.mainQueue.async { [weak self] in
+                    self?.view?.updateCells(id: id)
                 }
             case .failure(let failure):
                 print(failure.localizedDescription)
@@ -82,7 +83,7 @@ class NewsListPresenter: INewsListPresenter {
                                           source: article.url ?? "",
                                           article: article)
             
-            if !modelsToView.contains(where: { $0.source == newsModel.source }) {
+            if !modelsToView.contains(where: { $0.article.url == newsModel.article.url }) {
                 modelsToView.append(newsModel)
             }
         }

@@ -34,9 +34,9 @@ class NewsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
         apply(snapshot)
     }
     
-    func appendNewsCells(news: [NewsListModel]) {
+    func appendNewsCells(lastItem: UUID, news: [NewsListModel]) {
         var snapshot = snapshot()
-        snapshot.appendItems(news.map({ $0.uuid }))
+        snapshot.insertItems(news.map({ $0.uuid }), afterItem: lastItem)
         apply(snapshot)
     }
 }
