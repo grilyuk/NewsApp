@@ -41,7 +41,7 @@ private extension RequestFactory {
         urlComponents.host = host
         urlComponents.path = "/v2/everything"
         urlComponents.queryItems = [
-            URLQueryItem(name: "q", value: "apple"),
+            URLQueryItem(name: "q", value: "tesla"),
             URLQueryItem(name: "sortBy", value: "publishedAt"),
             URLQueryItem(name: "apiKey", value: "66f66f1087b64da9a2f48a31f2392fea"),
             URLQueryItem(name: "pageSize", value: String(news))
@@ -50,7 +50,7 @@ private extension RequestFactory {
         guard let url = urlComponents.url else {
             return nil
         }
-
+        print(url)
         return url
     }
 }

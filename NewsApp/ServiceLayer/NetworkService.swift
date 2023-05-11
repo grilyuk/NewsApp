@@ -70,6 +70,7 @@ class NetworkService: INetworkService {
             }
             
             guard let data = data else {
+                completion(.failure(MyError.requestError))
                 return
             }
             
