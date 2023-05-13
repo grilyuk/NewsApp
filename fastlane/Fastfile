@@ -1,4 +1,8 @@
+default_platform(:ios)
+
 desc "Build and Run"
 lane :build_and_run do |options|
  scan
+
+ puts "TEST!"
 end
