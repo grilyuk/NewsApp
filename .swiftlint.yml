@@ -1,6 +1,7 @@
 excluded:
   - Pods
   - UITests
+  - NewsAppUnitTests
   - DerivedData
 
 warning_threshold: 1
