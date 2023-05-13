@@ -28,7 +28,7 @@ class NewsListPresenter: INewsListPresenter {
             switch result {
                 
             case .success(let newsModel):
-                print(newsModel.articles.count)
+
                 self?.convertModels(networkModel: newsModel, completion: completion)
                 
             case .failure:

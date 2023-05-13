@@ -160,7 +160,7 @@ extension NewsListViewController: UITableViewDelegate {
             newsModels[index].isDownloaded = true
         }
         
-        if (indexPath.row + 1) == numbersOfNews {
+        if (indexPath.row + 3) == (numbersOfNews) {
             
             numbersOfNews != 100 ? numbersOfNews += 20 : print("")
             

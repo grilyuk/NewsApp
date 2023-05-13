@@ -74,7 +74,8 @@ class NetworkService: INetworkService {
                 return
             }
             
-            if let image = UIImage(data: data) {
+            if var image = UIImage(data: data) {
+                image = image.scalePreservingAspectRatio(targetSize: CGSize(width: 400, height: 400))
                 completion(.success(image))
             }
         }.resume()

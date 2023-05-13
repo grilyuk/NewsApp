@@ -41,9 +41,9 @@ private extension RequestFactory {
         urlComponents.host = host
         urlComponents.path = "/v2/everything"
         urlComponents.queryItems = [
-            URLQueryItem(name: "q", value: "tesla"),
+            URLQueryItem(name: "q", value: "apple"),
             URLQueryItem(name: "sortBy", value: "publishedAt"),
-            URLQueryItem(name: "apiKey", value: "66f66f1087b64da9a2f48a31f2392fea"),
+            URLQueryItem(name: "apiKey", value: "4cfd82affbdf41cf93612e1f3ec71a1a"),
             URLQueryItem(name: "pageSize", value: String(news))
         ]
 
