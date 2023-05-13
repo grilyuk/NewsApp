@@ -10,6 +10,6 @@ jobs:
       with:
         ruby-version: '3.0'
         bundler-cache: true
-    - name: Build and Run
+    - name: build_and_run
       run: |
         bundle exec fastlane
